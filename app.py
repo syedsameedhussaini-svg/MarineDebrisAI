@@ -5,162 +5,249 @@ from ultralytics import YOLO
 import json
 import csv
 import io
+import time
+import pandas as pd
 
-from geotag import footprint_pixel_to_gps
+from geotag import footprint_pixel_to_gps, valid_coordinate
 
 
-# ==================================================
+# ============================================================
 # MarineDebrisAI
-# AI-Powered Sonar Object Detection + Geotagging
-# ==================================================
+# AI-Powered Side-Scan Sonar Object Detection & Geotagging
+# ============================================================
 
+
+# ------------------------------------------------------------
+# PROJECT PATHS
+# ------------------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent
-
 MODEL_PATH = BASE_DIR / "best.pt"
 OUTPUT_DIR = BASE_DIR / "output"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ==================================================
+# ------------------------------------------------------------
 # PAGE CONFIGURATION
-# ==================================================
+# ------------------------------------------------------------
 
 st.set_page_config(
     page_title="MarineDebrisAI",
     page_icon="🌊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
-# ==================================================
+# ------------------------------------------------------------
+# CUSTOM CSS
+# ------------------------------------------------------------
+
+st.markdown(
+    """
+    <style>
+
+    .main-title {
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 0px;
+    }
+
+    .subtitle {
+        font-size: 19px;
+        margin-top: 0px;
+    }
+
+    .info-box {
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# ------------------------------------------------------------
 # HEADER
-# ==================================================
+# ------------------------------------------------------------
 
-st.title("🌊 MarineDebrisAI")
-st.subheader("AI-Powered Sonar Object Detection & Geotagging")
+st.markdown(
+    '<div class="main-title">🌊 MarineDebrisAI</div>',
+    unsafe_allow_html=True
+)
 
-st.write(
-    "Upload a sonar image, provide its geographic footprint, "
-    "and MarineDebrisAI will detect objects and estimate "
-    "their geographic coordinates."
+st.markdown(
+    '<div class="subtitle">'
+    'AI-Powered Side-Scan Sonar Object Detection & Geotagging'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.write("")
+
+st.info(
+    "MarineDebrisAI analyzes side-scan sonar imagery to identify "
+    "potential man-made marine anomalies, estimate their geographic "
+    "locations, and generate structured anomaly reports."
 )
 
 
-# ==================================================
-# MODEL CHECK
-# ==================================================
+# ------------------------------------------------------------
+# MODEL LOADING
+# ------------------------------------------------------------
+
+@st.cache_resource
+def load_model():
+    return YOLO(str(MODEL_PATH))
+
 
 if not MODEL_PATH.exists():
 
     st.error(
-        f"❌ Model not found:\n\n{MODEL_PATH}"
+        f"❌ AI model not found.\n\n"
+        f"Expected location:\n`{MODEL_PATH}`"
     )
 
     st.stop()
 
 
-# ==================================================
-# LOAD MODEL
-# ==================================================
+try:
 
-@st.cache_resource
-def load_model():
+    model = load_model()
 
-    return YOLO(
-        str(MODEL_PATH)
+except Exception as e:
+
+    st.error(
+        "❌ The AI model could not be loaded."
     )
 
+    st.exception(e)
 
-model = load_model()
+    st.stop()
 
 
-# ==================================================
-# SONAR GEOGRAPHIC FOOTPRINT
-# ==================================================
+# ------------------------------------------------------------
+# SIDEBAR
+# ------------------------------------------------------------
 
-st.write("### 🗺️ Sonar Survey Geographic Footprint")
+st.sidebar.title("⚙️ Analysis Settings")
 
-st.info(
-    "Enter the geographic boundaries covered by the sonar image. "
-    "The coordinates generated for detected objects are "
-    "approximate and depend on the accuracy of this footprint."
+st.sidebar.markdown(
+    "### Detection"
+)
+
+confidence_threshold = st.sidebar.slider(
+    "Minimum confidence",
+    min_value=0.10,
+    max_value=0.95,
+    value=0.25,
+    step=0.05
+)
+
+iou_threshold = st.sidebar.slider(
+    "IoU threshold",
+    min_value=0.10,
+    max_value=0.90,
+    value=0.45,
+    step=0.05
+)
+
+st.sidebar.caption(
+    "Higher confidence thresholds reduce low-confidence detections."
+)
+
+st.sidebar.divider()
+
+st.sidebar.markdown(
+    "### Model"
+)
+
+st.sidebar.write(
+    f"Model: `{MODEL_PATH.name}`"
+)
+
+st.sidebar.write(
+    f"Confidence: `{confidence_threshold * 100:.0f}%`"
+)
+
+st.sidebar.write(
+    f"IoU: `{iou_threshold:.2f}`"
 )
 
 
-# --------------------------------------------------
-# Latitude
-# --------------------------------------------------
+# ------------------------------------------------------------
+# GEOGRAPHIC FOOTPRINT
+# ------------------------------------------------------------
 
-lat_col1, lat_col2 = st.columns(2)
+st.header("🗺️ Survey Geographic Footprint")
 
+st.write(
+    "Define the approximate geographic coverage of the sonar image. "
+    "Detected pixel locations will be converted into estimated "
+    "latitude and longitude coordinates."
+)
 
-with lat_col1:
+geo_col1, geo_col2 = st.columns(2)
+
+with geo_col1:
 
     latitude_min = st.number_input(
         "Minimum Latitude",
-        min_value=-90.0,
-        max_value=90.0,
-        value=0.0,
-        step=0.000001,
-        format="%.6f"
+        value=17.000000,
+        format="%.7f"
     )
-
-
-with lat_col2:
 
     latitude_max = st.number_input(
         "Maximum Latitude",
-        min_value=-90.0,
-        max_value=90.0,
-        value=0.01,
-        step=0.000001,
-        format="%.6f"
+        value=17.010000,
+        format="%.7f"
     )
 
-
-# --------------------------------------------------
-# Longitude
-# --------------------------------------------------
-
-lon_col1, lon_col2 = st.columns(2)
-
-
-with lon_col1:
+with geo_col2:
 
     longitude_min = st.number_input(
         "Minimum Longitude",
-        min_value=-180.0,
-        max_value=180.0,
-        value=0.0,
-        step=0.000001,
-        format="%.6f"
+        value=78.000000,
+        format="%.7f"
     )
-
-
-with lon_col2:
 
     longitude_max = st.number_input(
         "Maximum Longitude",
-        min_value=-180.0,
-        max_value=180.0,
-        value=0.01,
-        step=0.000001,
-        format="%.6f"
+        value=78.010000,
+        format="%.7f"
     )
 
 
-# ==================================================
-# FOOTPRINT VALIDATION
-# ==================================================
+# ------------------------------------------------------------
+# GEO VALIDATION
+# ------------------------------------------------------------
+
+coordinates_valid = all(
+    [
+        valid_coordinate(latitude_min, longitude_min),
+        valid_coordinate(latitude_max, longitude_max)
+    ]
+)
+
+if not coordinates_valid:
+
+    st.error(
+        "❌ Invalid geographic coordinates."
+    )
+
+    st.stop()
+
 
 if latitude_min >= latitude_max:
 
-    st.error(
-        "❌ Maximum latitude must be greater than "
-        "minimum latitude."
+    st.warning(
+        "⚠️ Minimum latitude must be smaller than maximum latitude."
     )
 
     st.stop()
@@ -168,33 +255,38 @@ if latitude_min >= latitude_max:
 
 if longitude_min >= longitude_max:
 
-    st.error(
-        "❌ Maximum longitude must be greater than "
-        "minimum longitude."
+    st.warning(
+        "⚠️ Minimum longitude must be smaller than maximum longitude."
     )
 
     st.stop()
 
 
-# ==================================================
-# DISPLAY FOOTPRINT
-# ==================================================
+# ------------------------------------------------------------
+# GEOGRAPHIC INFORMATION
+# ------------------------------------------------------------
 
 st.caption(
-    f"Image footprint: "
-    f"{latitude_min:.6f}° to {latitude_max:.6f}° latitude, "
-    f"{longitude_min:.6f}° to {longitude_max:.6f}° longitude."
+    f"Survey area: "
+    f"{latitude_min:.7f} → {latitude_max:.7f} latitude, "
+    f"{longitude_min:.7f} → {longitude_max:.7f} longitude"
+)
+
+st.warning(
+    "⚠️ Geographic coordinates are approximate and are derived "
+    "from the supplied image footprint. Accurate marine positioning "
+    "requires actual GPS/INS/sonar navigation metadata."
 )
 
 
-# ==================================================
+# ------------------------------------------------------------
 # IMAGE UPLOAD
-# ==================================================
+# ------------------------------------------------------------
 
-st.write("### 📷 Upload Sonar Image")
+st.header("📡 Sonar Image Analysis")
 
 uploaded_file = st.file_uploader(
-    "Choose a sonar image",
+    "Upload a side-scan sonar image",
     type=[
         "jpg",
         "jpeg",
@@ -206,28 +298,80 @@ uploaded_file = st.file_uploader(
 )
 
 
-# ==================================================
-# MAIN PIPELINE
-# ==================================================
+# ------------------------------------------------------------
+# PROCESS IMAGE
+# ------------------------------------------------------------
 
 if uploaded_file is not None:
 
-    # --------------------------------------------------
+    # --------------------------------------------------------
     # LOAD IMAGE
-    # --------------------------------------------------
+    # --------------------------------------------------------
 
-    original_image = Image.open(
-        uploaded_file
-    ).convert("RGB")
+    try:
 
-    image_width, image_height = original_image.size
+        original_image = Image.open(
+            uploaded_file
+        ).convert("RGB")
+
+    except Exception as e:
+
+        st.error(
+            "❌ Unable to read the uploaded image."
+        )
+
+        st.exception(e)
+
+        st.stop()
 
 
-    # --------------------------------------------------
+    image_width, image_height = (
+        original_image.size
+    )
+
+
+    # --------------------------------------------------------
+    # IMAGE INFORMATION
+    # --------------------------------------------------------
+
+    st.subheader("📷 Input Information")
+
+    info1, info2, info3, info4 = st.columns(4)
+
+    with info1:
+
+        st.metric(
+            "Width",
+            f"{image_width}px"
+        )
+
+    with info2:
+
+        st.metric(
+            "Height",
+            f"{image_height}px"
+        )
+
+    with info3:
+
+        st.metric(
+            "Confidence",
+            f"{confidence_threshold * 100:.0f}%"
+        )
+
+    with info4:
+
+        st.metric(
+            "IoU",
+            f"{iou_threshold:.2f}"
+        )
+
+
+    # --------------------------------------------------------
     # ORIGINAL IMAGE
-    # --------------------------------------------------
+    # --------------------------------------------------------
 
-    st.write("### Uploaded Sonar Image")
+    st.subheader("Original Sonar Image")
 
     st.image(
         original_image,
@@ -236,28 +380,78 @@ if uploaded_file is not None:
     )
 
 
-    # ==================================================
-    # YOLO DETECTION
-    # ==================================================
+    # --------------------------------------------------------
+    # DETECTION
+    # --------------------------------------------------------
 
-    with st.spinner(
-        "🔍 Running MarineDebrisAI detection..."
-    ):
+    progress = st.progress(
+        0,
+        text="Preparing AI analysis..."
+    )
+
+    start_time = time.perf_counter()
+
+
+    try:
+
+        progress.progress(
+            25,
+            text="Loading sonar image..."
+        )
+
+        time.sleep(0.1)
+
+        progress.progress(
+            50,
+            text="Running YOLO object detection..."
+        )
 
         results = model.predict(
             source=original_image,
-            conf=0.25,
+            conf=confidence_threshold,
+            iou=iou_threshold,
             save=False,
             verbose=False
         )
+
+        progress.progress(
+            85,
+            text="Processing detections..."
+        )
+
+    except Exception as e:
+
+        progress.empty()
+
+        st.error(
+            "❌ AI detection failed."
+        )
+
+        st.exception(e)
+
+        st.stop()
+
+
+    processing_time = (
+        time.perf_counter() - start_time
+    )
+
+    progress.progress(
+        100,
+        text="Analysis complete."
+    )
+
+    time.sleep(0.2)
+
+    progress.empty()
 
 
     result = results[0]
 
 
-    # ==================================================
-    # BUILD DETECTION REPORT
-    # ==================================================
+    # --------------------------------------------------------
+    # DETECTION EXTRACTION
+    # --------------------------------------------------------
 
     detections = []
 
@@ -268,55 +462,37 @@ if uploaded_file is not None:
             len(result.boxes)
         ):
 
-            # ------------------------------------------
-            # CLASS
-            # ------------------------------------------
-
             class_id = int(
                 result.boxes.cls[i]
             )
 
-            class_name = model.names[
-                class_id
-            ]
-
-
-            # ------------------------------------------
-            # CONFIDENCE
-            # ------------------------------------------
-
             confidence = float(
                 result.boxes.conf[i]
             )
-
-
-            # ------------------------------------------
-            # BOUNDING BOX
-            # ------------------------------------------
 
             x1, y1, x2, y2 = (
                 result.boxes.xyxy[i].tolist()
             )
 
 
-            # ------------------------------------------
-            # OBJECT CENTER
-            # ------------------------------------------
+            # ----------------------------------------------
+            # CENTER PIXEL
+            # ----------------------------------------------
 
             center_x = (
                 x1 + x2
-            ) / 2.0
+            ) / 2
 
             center_y = (
                 y1 + y2
-            ) / 2.0
+            ) / 2
 
 
-            # ------------------------------------------
-            # PIXEL → GPS
-            # ------------------------------------------
+            # ----------------------------------------------
+            # GEOTAG
+            # ----------------------------------------------
 
-            object_latitude, object_longitude = (
+            latitude, longitude = (
                 footprint_pixel_to_gps(
                     center_x,
                     center_y,
@@ -330,9 +506,18 @@ if uploaded_file is not None:
             )
 
 
-            # ------------------------------------------
-            # OBJECT SIZE
-            # ------------------------------------------
+            # ----------------------------------------------
+            # CLASS
+            # ----------------------------------------------
+
+            class_name = model.names[
+                class_id
+            ]
+
+
+            # ----------------------------------------------
+            # DIMENSIONS
+            # ----------------------------------------------
 
             width_pixels = (
                 x2 - x1
@@ -343,197 +528,387 @@ if uploaded_file is not None:
             )
 
 
-            # ------------------------------------------
-            # DETECTION RECORD
-            # ------------------------------------------
+            # ----------------------------------------------
+            # CONFIDENCE LEVEL
+            # ----------------------------------------------
 
-            detection = {
+            if confidence >= 0.80:
 
-                "image":
-                    uploaded_file.name,
+                confidence_level = "High"
 
-                "classification":
-                    class_name,
+            elif confidence >= 0.60:
 
-                "confidence":
-                    round(
-                        confidence * 100,
-                        2
-                    ),
+                confidence_level = "Moderate"
 
-                "bounding_box": {
+            else:
 
-                    "x1":
-                        round(x1, 2),
+                confidence_level = "Low"
 
-                    "y1":
-                        round(y1, 2),
 
-                    "x2":
-                        round(x2, 2),
-
-                    "y2":
-                        round(y2, 2)
-                },
-
-                "center_pixel": {
-
-                    "x":
-                        round(center_x, 2),
-
-                    "y":
-                        round(center_y, 2)
-                },
-
-                "width_pixels":
-                    round(
-                        width_pixels,
-                        2
-                    ),
-
-                "height_pixels":
-                    round(
-                        height_pixels,
-                        2
-                    ),
-
-                "latitude":
-                    object_latitude,
-
-                "longitude":
-                    object_longitude
-            }
-
+            # ----------------------------------------------
+            # DETECTION OBJECT
+            # ----------------------------------------------
 
             detections.append(
-                detection
+
+                {
+                    "image":
+                        uploaded_file.name,
+
+                    "classification":
+                        class_name,
+
+                    "confidence":
+                        round(
+                            confidence * 100,
+                            2
+                        ),
+
+                    "confidence_level":
+                        confidence_level,
+
+                    "bounding_box":
+                        {
+                            "x1":
+                                round(x1, 2),
+
+                            "y1":
+                                round(y1, 2),
+
+                            "x2":
+                                round(x2, 2),
+
+                            "y2":
+                                round(y2, 2)
+                        },
+
+                    "center_pixel":
+                        {
+                            "x":
+                                round(center_x, 2),
+
+                            "y":
+                                round(center_y, 2)
+                        },
+
+                    "width_pixels":
+                        round(
+                            width_pixels,
+                            2
+                        ),
+
+                    "height_pixels":
+                        round(
+                            height_pixels,
+                            2
+                        ),
+
+                    "latitude":
+                        latitude,
+
+                    "longitude":
+                        longitude
+                }
             )
 
 
-    # ==================================================
+    # --------------------------------------------------------
     # ANNOTATED IMAGE
-    # ==================================================
+    # --------------------------------------------------------
 
     annotated = result.plot()
 
 
-    # ==================================================
-    # DETECTION RESULTS
-    # ==================================================
+    # --------------------------------------------------------
+    # SUMMARY
+    # --------------------------------------------------------
 
-    st.write(
-        "### 🎯 Detection Results"
+    st.header("🔎 Detection Summary")
+
+
+    total_detections = len(
+        detections
     )
+
+
+    high_count = sum(
+        1
+        for d in detections
+        if d["confidence_level"] == "High"
+    )
+
+
+    moderate_count = sum(
+        1
+        for d in detections
+        if d["confidence_level"] == "Moderate"
+    )
+
+
+    low_count = sum(
+        1
+        for d in detections
+        if d["confidence_level"] == "Low"
+    )
+
+
+    if detections:
+
+        average_confidence = sum(
+            d["confidence"]
+            for d in detections
+        ) / len(detections)
+
+        highest_confidence = max(
+            d["confidence"]
+            for d in detections
+        )
+
+    else:
+
+        average_confidence = 0
+        highest_confidence = 0
+
+
+    summary1, summary2, summary3, summary4 = (
+        st.columns(4)
+    )
+
+
+    with summary1:
+
+        st.metric(
+            "Objects Detected",
+            total_detections
+        )
+
+
+    with summary2:
+
+        st.metric(
+            "Highest Confidence",
+            f"{highest_confidence:.1f}%"
+        )
+
+
+    with summary3:
+
+        st.metric(
+            "Average Confidence",
+            f"{average_confidence:.1f}%"
+        )
+
+
+    with summary4:
+
+        st.metric(
+            "Processing Time",
+            f"{processing_time:.2f}s"
+        )
+
+
+    # --------------------------------------------------------
+    # CONFIDENCE BREAKDOWN
+    # --------------------------------------------------------
+
+    if detections:
+
+        st.caption(
+            f"High: {high_count}  |  "
+            f"Moderate: {moderate_count}  |  "
+            f"Low: {low_count}"
+        )
+
+
+    # --------------------------------------------------------
+    # VISUAL RESULTS
+    # --------------------------------------------------------
+
+    st.header("🎯 AI Detection Results")
 
 
     result_col1, result_col2 = (
-        st.columns([2, 1])
+        st.columns(
+            [1.6, 1]
+        )
     )
 
-
-    # --------------------------------------------------
-    # IMAGE
-    # --------------------------------------------------
 
     with result_col1:
 
         st.image(
             annotated,
-            caption="AI Detection",
+            caption="AI Detection — Bounding Boxes",
             use_container_width=True
         )
 
 
-    # --------------------------------------------------
-    # INFORMATION
-    # --------------------------------------------------
-
     with result_col2:
-
-        st.metric(
-            "Objects Detected",
-            len(detections)
-        )
-
-
-        st.write(
-            "#### 🗺️ Image Footprint"
-        )
-
-        st.write(
-            f"Latitude: "
-            f"**{latitude_min:.6f} → "
-            f"{latitude_max:.6f}**"
-        )
-
-        st.write(
-            f"Longitude: "
-            f"**{longitude_min:.6f} → "
-            f"{longitude_max:.6f}**"
-        )
-
 
         if detections:
 
-            st.write(
-                "#### 🔎 Detected Objects"
+            st.subheader(
+                "Detected Anomalies"
             )
-
 
             for number, detection in enumerate(
                 detections,
                 1
             ):
 
-                st.write(
+                st.markdown(
                     f"**{number}. "
                     f"{detection['classification']}**"
                 )
 
-
                 st.write(
-                    "Confidence: "
+                    f"Confidence: "
                     f"**{detection['confidence']}%**"
                 )
 
+                st.write(
+                    f"Level: "
+                    f"**{detection['confidence_level']}**"
+                )
 
                 st.write(
-                    "Size: **"
-                    f"{detection['width_pixels']} × "
+                    f"Estimated GPS: "
+                    f"**{detection['latitude']}, "
+                    f"{detection['longitude']}**"
+                )
+
+                st.write(
+                    f"Bounding size: "
+                    f"**{detection['width_pixels']} × "
                     f"{detection['height_pixels']} px**"
                 )
 
-
-                st.write(
-                    "Estimated Coordinates:"
-                )
-
-
-                st.write(
-                    f"**Latitude:** "
-                    f"{detection['latitude']:.7f}"
-                )
-
-
-                st.write(
-                    f"**Longitude:** "
-                    f"{detection['longitude']:.7f}"
-                )
-
-
                 st.divider()
-
 
         else:
 
-            st.info(
-                "No objects detected."
+            st.success(
+                "No potential anomalies were detected "
+                "above the selected confidence threshold."
             )
 
 
-    # ==================================================
+    # --------------------------------------------------------
+    # STRUCTURED TABLE
+    # --------------------------------------------------------
+
+    st.header("📊 Structured Anomaly Report")
+
+
+    if detections:
+
+        table_rows = []
+
+        for number, detection in enumerate(
+            detections,
+            1
+        ):
+
+            table_rows.append(
+
+                {
+                    "#":
+                        number,
+
+                    "Classification":
+                        detection["classification"],
+
+                    "Confidence (%)":
+                        detection["confidence"],
+
+                    "Level":
+                        detection["confidence_level"],
+
+                    "Width (px)":
+                        detection["width_pixels"],
+
+                    "Height (px)":
+                        detection["height_pixels"],
+
+                    "Latitude":
+                        detection["latitude"],
+
+                    "Longitude":
+                        detection["longitude"]
+                }
+            )
+
+
+        dataframe = pd.DataFrame(
+            table_rows
+        )
+
+
+        st.dataframe(
+            dataframe,
+            use_container_width=True,
+            hide_index=True
+        )
+
+
+    else:
+
+        st.info(
+            "No anomaly records available."
+        )
+
+
+    # --------------------------------------------------------
+    # MAP
+    # --------------------------------------------------------
+
+    if detections:
+
+        st.header("🗺️ Detected Anomaly Locations")
+
+        map_rows = []
+
+        for detection in detections:
+
+            map_rows.append(
+                {
+                    "latitude":
+                        detection["latitude"],
+
+                    "longitude":
+                        detection["longitude"]
+                }
+            )
+
+
+        map_dataframe = pd.DataFrame(
+            map_rows
+        )
+
+
+        st.map(
+            map_dataframe,
+            latitude="latitude",
+            longitude="longitude",
+            use_container_width=True
+        )
+
+
+        st.caption(
+            "Map points represent estimated anomaly centers "
+            "derived from the supplied survey footprint."
+        )
+
+
+    # --------------------------------------------------------
     # JSON REPORT
-    # ==================================================
+    # --------------------------------------------------------
+
+    json_data = json.dumps(
+        detections,
+        indent=4
+    )
+
 
     json_path = (
         OUTPUT_DIR /
@@ -545,18 +920,16 @@ if uploaded_file is not None:
         json_path,
         "w",
         encoding="utf-8"
-    ) as f:
+    ) as file:
 
-        json.dump(
-            detections,
-            f,
-            indent=4
+        file.write(
+            json_data
         )
 
 
-    # ==================================================
+    # --------------------------------------------------------
     # CSV REPORT
-    # ==================================================
+    # --------------------------------------------------------
 
     csv_buffer = io.StringIO()
 
@@ -569,6 +942,12 @@ if uploaded_file is not None:
 
         "confidence_percent",
 
+        "confidence_level",
+
+        "center_x",
+
+        "center_y",
+
         "x1",
 
         "y1",
@@ -576,10 +955,6 @@ if uploaded_file is not None:
         "x2",
 
         "y2",
-
-        "center_x",
-
-        "center_y",
 
         "width_pixels",
 
@@ -602,57 +977,78 @@ if uploaded_file is not None:
 
     for detection in detections:
 
-        writer.writerow({
+        writer.writerow(
 
-            "image":
-                detection["image"],
+            {
+                "image":
+                    detection["image"],
 
-            "classification":
-                detection["classification"],
+                "classification":
+                    detection["classification"],
 
-            "confidence_percent":
-                detection["confidence"],
+                "confidence_percent":
+                    detection["confidence"],
 
-            "x1":
-                detection["bounding_box"]["x1"],
+                "confidence_level":
+                    detection["confidence_level"],
 
-            "y1":
-                detection["bounding_box"]["y1"],
+                "center_x":
+                    detection[
+                        "center_pixel"
+                    ]["x"],
 
-            "x2":
-                detection["bounding_box"]["x2"],
+                "center_y":
+                    detection[
+                        "center_pixel"
+                    ]["y"],
 
-            "y2":
-                detection["bounding_box"]["y2"],
+                "x1":
+                    detection[
+                        "bounding_box"
+                    ]["x1"],
 
-            "center_x":
-                detection["center_pixel"]["x"],
+                "y1":
+                    detection[
+                        "bounding_box"
+                    ]["y1"],
 
-            "center_y":
-                detection["center_pixel"]["y"],
+                "x2":
+                    detection[
+                        "bounding_box"
+                    ]["x2"],
 
-            "width_pixels":
-                detection["width_pixels"],
+                "y2":
+                    detection[
+                        "bounding_box"
+                    ]["y2"],
 
-            "height_pixels":
-                detection["height_pixels"],
+                "width_pixels":
+                    detection[
+                        "width_pixels"
+                    ],
 
-            "latitude":
-                detection["latitude"],
+                "height_pixels":
+                    detection[
+                        "height_pixels"
+                    ],
 
-            "longitude":
-                detection["longitude"]
-        })
+                "latitude":
+                    detection[
+                        "latitude"
+                    ],
+
+                "longitude":
+                    detection[
+                        "longitude"
+                    ]
+            }
+        )
 
 
     csv_data = (
         csv_buffer.getvalue()
     )
 
-
-    # ==================================================
-    # SAVE CSV
-    # ==================================================
 
     csv_path = (
         OUTPUT_DIR /
@@ -665,20 +1061,18 @@ if uploaded_file is not None:
         "w",
         encoding="utf-8",
         newline=""
-    ) as f:
+    ) as file:
 
-        f.write(
+        file.write(
             csv_data
         )
 
 
-    # ==================================================
-    # REPORT DOWNLOADS
-    # ==================================================
+    # --------------------------------------------------------
+    # DOWNLOAD REPORTS
+    # --------------------------------------------------------
 
-    st.write(
-        "### 📄 Reports"
-    )
+    st.header("📥 Download Reports")
 
 
     download_col1, download_col2 = (
@@ -686,38 +1080,29 @@ if uploaded_file is not None:
     )
 
 
-    # --------------------------------------------------
-    # JSON
-    # --------------------------------------------------
-
     with download_col1:
 
         st.download_button(
 
-            label="⬇️ Download JSON Report",
+            label="📄 Download JSON Report",
 
-            data=json.dumps(
-                detections,
-                indent=4
-            ),
+            data=json_data,
 
             file_name=
                 "detection_report.json",
 
             mime=
-                "application/json"
+                "application/json",
+
+            use_container_width=True
         )
 
-
-    # --------------------------------------------------
-    # CSV
-    # --------------------------------------------------
 
     with download_col2:
 
         st.download_button(
 
-            label="⬇️ Download CSV Report",
+            label="📊 Download CSV Report",
 
             data=csv_data,
 
@@ -725,31 +1110,38 @@ if uploaded_file is not None:
                 "anomaly_report.csv",
 
             mime=
-                "text/csv"
+                "text/csv",
+
+            use_container_width=True
         )
 
 
-    # ==================================================
-    # SUCCESS
-    # ==================================================
+    # --------------------------------------------------------
+    # FINAL STATUS
+    # --------------------------------------------------------
 
-    st.success(
-        "✅ Detection and approximate geotagging complete."
-    )
+    if detections:
 
-
-    # ==================================================
-    # OUTPUT INFORMATION
-    # ==================================================
-
-    with st.expander(
-        "📁 Output Information"
-    ):
-
-        st.write(
-            f"JSON report: `{json_path}`"
+        st.success(
+            f"✅ Analysis complete. "
+            f"{len(detections)} potential anomaly(s) detected."
         )
 
-        st.write(
-            f"CSV report: `{csv_path}`"
+    else:
+
+        st.success(
+            "✅ Analysis complete. "
+            "No potential anomalies detected."
         )
+
+
+# ------------------------------------------------------------
+# FOOTER
+# ------------------------------------------------------------
+
+st.divider()
+
+st.caption(
+    "MarineDebrisAI | AI-assisted side-scan sonar anomaly "
+    "detection, confidence scoring and approximate geospatial localization"
+)
