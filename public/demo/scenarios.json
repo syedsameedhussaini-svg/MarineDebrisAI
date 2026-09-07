@@ -1,0 +1,289 @@
+[
+  {
+    "id": "aircraft",
+    "title": "Scan 042: Submerged Aircraft Wreckage",
+    "subtitle": "Twin-engine maritime patrol aircraft located at 42m depth on sandy seabed",
+    "filename": "sonar_aircraft.jpg",
+    "image_url": "/demo/sonar_aircraft.jpg",
+    "acoustic_swath_m": 150,
+    "sonar_frequency_khz": 455,
+    "footprint": {
+      "latitude_min": 24.312,
+      "latitude_max": 24.322,
+      "longitude_min": -80.455,
+      "longitude_max": -80.445
+    },
+    "detections": [
+      {
+        "image": "sonar_aircraft.jpg",
+        "id": "DET-042-01",
+        "classification": "aircraft",
+        "confidence": 93.4,
+        "confidence_level": "High",
+        "anomaly_score": 81.62,
+        "anomaly_assessment": "High",
+        "bounding_box": {
+          "x1": 430,
+          "y1": 380,
+          "x2": 560,
+          "y2": 540
+        },
+        "center_pixel": {
+          "x": 495.0,
+          "y": 460.0
+        },
+        "width_pixels": 130,
+        "height_pixels": 160,
+        "latitude": 24.3175078,
+        "longitude": -80.450166,
+        "shadow_score": 54.37,
+        "texture_score": 100.0,
+        "edge_score": 14.28,
+        "image_quality_score": 50.0,
+        "dropout_percentage": 0.0,
+        "warnings": [],
+        "target_desc": "Intact fuselage with detached port wing structure casting sharp 160m acoustic shadow"
+      }
+    ],
+    "image_dimensions": {
+      "width": 1024,
+      "height": 1024
+    },
+    "quality": {
+      "brightness": 104.56,
+      "contrast": 32.839,
+      "sharpness": 15.473,
+      "quality_score": 50.0
+    },
+    "dropout_analysis": {
+      "dropout_detected": false,
+      "dropout_percentage": 0.0,
+      "dropout_tiles": 0,
+      "total_tiles": 1024
+    },
+    "texture_score": 14.01,
+    "edge_score": 0.81
+  },
+  {
+    "id": "shipwreck",
+    "title": "Scan 108: Historic Cargo Vessel Shipwreck",
+    "subtitle": "65-meter iron-hulled freighter anomaly with scattered deck debris",
+    "filename": "sonar_shipwreck.jpg",
+    "image_url": "/demo/sonar_shipwreck.jpg",
+    "acoustic_swath_m": 200,
+    "sonar_frequency_khz": 455,
+    "footprint": {
+      "latitude_min": 34.015,
+      "latitude_max": 34.028,
+      "longitude_min": -76.84,
+      "longitude_max": -76.825
+    },
+    "detections": [
+      {
+        "image": "sonar_shipwreck.jpg",
+        "id": "DET-108-01",
+        "classification": "shipwreck",
+        "confidence": 96.8,
+        "confidence_level": "High",
+        "anomaly_score": 89.77,
+        "anomaly_assessment": "High",
+        "bounding_box": {
+          "x1": 320,
+          "y1": 330,
+          "x2": 460,
+          "y2": 670
+        },
+        "center_pixel": {
+          "x": 390.0,
+          "y": 500.0
+        },
+        "width_pixels": 140,
+        "height_pixels": 340,
+        "latitude": 34.0216523,
+        "longitude": -76.8342871,
+        "shadow_score": 100.0,
+        "texture_score": 98.28,
+        "edge_score": 12.2,
+        "image_quality_score": 56.08,
+        "dropout_percentage": 0.0,
+        "warnings": [],
+        "target_desc": "Primary hull section upright on seabed with high acoustic reflectivity"
+      },
+      {
+        "image": "sonar_shipwreck.jpg",
+        "id": "DET-108-02",
+        "classification": "other",
+        "confidence": 78.5,
+        "confidence_level": "Moderate",
+        "anomaly_score": 75.78,
+        "anomaly_assessment": "Moderate",
+        "bounding_box": {
+          "x1": 455,
+          "y1": 605,
+          "x2": 500,
+          "y2": 650
+        },
+        "center_pixel": {
+          "x": 477.5,
+          "y": 627.5
+        },
+        "width_pixels": 45,
+        "height_pixels": 45,
+        "latitude": 34.0200337,
+        "longitude": -76.8330054,
+        "shadow_score": 82.99,
+        "texture_score": 100.0,
+        "edge_score": 27.65,
+        "image_quality_score": 56.08,
+        "dropout_percentage": 0.0,
+        "warnings": [],
+        "target_desc": "Displaced cargo/boiler debris fragment with acoustic shadow"
+      }
+    ],
+    "image_dimensions": {
+      "width": 1024,
+      "height": 1024
+    },
+    "quality": {
+      "brightness": 104.071,
+      "contrast": 43.29,
+      "sharpness": 9.013,
+      "quality_score": 56.08
+    },
+    "dropout_analysis": {
+      "dropout_detected": false,
+      "dropout_percentage": 0.0,
+      "dropout_tiles": 0,
+      "total_tiles": 1024
+    },
+    "texture_score": 12.42,
+    "edge_score": 1.58
+  },
+  {
+    "id": "debris_field",
+    "title": "Scan 215: Underwater Pipeline & Marine Debris",
+    "subtitle": "Commercial shipping corridor debris with lost ISO container & biological scatter",
+    "filename": "sonar_debris_field.jpg",
+    "image_url": "/demo/sonar_debris_field.jpg",
+    "acoustic_swath_m": 120,
+    "sonar_frequency_khz": 900,
+    "footprint": {
+      "latitude_min": 17.15,
+      "latitude_max": 17.162,
+      "longitude_min": 78.22,
+      "longitude_max": 78.235
+    },
+    "detections": [
+      {
+        "image": "sonar_debris_field.jpg",
+        "id": "DET-215-01",
+        "classification": "other",
+        "confidence": 88.6,
+        "confidence_level": "High",
+        "anomaly_score": 83.82,
+        "anomaly_assessment": "High",
+        "bounding_box": {
+          "x1": 310,
+          "y1": 260,
+          "x2": 415,
+          "y2": 355
+        },
+        "center_pixel": {
+          "x": 362.5,
+          "y": 307.5
+        },
+        "width_pixels": 105,
+        "height_pixels": 95,
+        "latitude": 17.1583965,
+        "longitude": 78.2253101,
+        "shadow_score": 100.0,
+        "texture_score": 92.71,
+        "edge_score": 21.35,
+        "image_quality_score": 51.25,
+        "dropout_percentage": 0.0,
+        "warnings": [],
+        "target_desc": "Submerged rectangular steel freight container anomaly"
+      },
+      {
+        "image": "sonar_debris_field.jpg",
+        "id": "DET-215-02",
+        "classification": "other",
+        "confidence": 84.2,
+        "confidence_level": "High",
+        "anomaly_score": 77.04,
+        "anomaly_assessment": "Moderate",
+        "bounding_box": {
+          "x1": 570,
+          "y1": 550,
+          "x2": 665,
+          "y2": 635
+        },
+        "center_pixel": {
+          "x": 617.5,
+          "y": 592.5
+        },
+        "width_pixels": 95,
+        "height_pixels": 85,
+        "latitude": 17.1550566,
+        "longitude": 78.2290454,
+        "shadow_score": 65.36,
+        "texture_score": 100.0,
+        "edge_score": 23.22,
+        "image_quality_score": 51.25,
+        "dropout_percentage": 0.0,
+        "warnings": [],
+        "target_desc": "Secondary heavy industrial debris / metal frame"
+      },
+      {
+        "image": "sonar_debris_field.jpg",
+        "id": "DET-215-03",
+        "classification": "fish",
+        "confidence": 72.1,
+        "confidence_level": "Moderate",
+        "anomaly_score": 57.64,
+        "anomaly_assessment": "Low",
+        "bounding_box": {
+          "x1": 215,
+          "y1": 715,
+          "x2": 295,
+          "y2": 785
+        },
+        "center_pixel": {
+          "x": 255.0,
+          "y": 750.0
+        },
+        "width_pixels": 80,
+        "height_pixels": 70,
+        "latitude": 17.1532109,
+        "longitude": 78.2237354,
+        "shadow_score": 0.0,
+        "texture_score": 37.43,
+        "edge_score": 24.02,
+        "image_quality_score": 51.25,
+        "dropout_percentage": 0.0,
+        "warnings": [
+          "Weak shadow-like evidence"
+        ],
+        "target_desc": "Midwater biological acoustic scatter (pelagic fish aggregation)"
+      }
+    ],
+    "image_dimensions": {
+      "width": 1024,
+      "height": 1024
+    },
+    "quality": {
+      "brightness": 105.703,
+      "contrast": 33.824,
+      "sharpness": 21.839,
+      "quality_score": 51.25
+    },
+    "dropout_analysis": {
+      "dropout_detected": false,
+      "dropout_percentage": 0.0,
+      "dropout_tiles": 0,
+      "total_tiles": 1024
+    },
+    "texture_score": 14.72,
+    "edge_score": 1.64
+  }
+]

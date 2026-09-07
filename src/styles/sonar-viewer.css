@@ -1,0 +1,134 @@
+/* ============================================================
+   MarineDebrisAI - Sonar Viewer & Detection Inspector
+   Clean Scientific Image Inspection Layout
+   ============================================================ */
+
+.sonar-viewer-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  min-height: 540px;
+}
+
+@media (max-width: 1100px) {
+  .sonar-viewer-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Image Display Stage */
+.sonar-display-stage {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.sonar-stage-toolbar {
+  height: 44px;
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-viewport {
+  flex: 1;
+  min-height: 480px;
+  background: #0f172a; /* Neutral slate dark mat for acoustic grayscale imagery */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.sonar-main-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform var(--transition-fast);
+}
+
+/* Right Inspector Panel */
+.sonar-inspector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detection-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.detection-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.detection-card:hover {
+  border-color: var(--border-strong);
+}
+
+.detection-card.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.detection-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.detection-id {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.detection-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.detection-meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detection-meta-label {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.detection-meta-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
