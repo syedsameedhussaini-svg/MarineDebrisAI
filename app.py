@@ -2,13 +2,19 @@ import streamlit as st
 from pathlib import Path
 from PIL import Image
 from ultralytics import YOLO
+
 import json
 import csv
 import io
 import time
+
+import numpy as np
 import pandas as pd
 
-from geotag import footprint_pixel_to_gps, valid_coordinate
+from geotag import (
+    footprint_pixel_to_gps,
+    valid_coordinate
+)
 
 from preprocess import (
     preprocess_with_analysis,
@@ -16,7 +22,9 @@ from preprocess import (
     TARGET_HEIGHT
 )
 
-from sonar_analysis import validate_detection
+from sonar_analysis import (
+    validate_detection
+)
 
 
 # ============================================================
@@ -72,14 +80,6 @@ st.markdown(
         margin-top: 0px;
     }
 
-    .info-box {
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #444;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
     </style>
     """,
     unsafe_allow_html=True
@@ -107,14 +107,14 @@ st.write("")
 st.info(
     "MarineDebrisAI analyzes side-scan sonar imagery to identify "
     "potential man-made marine anomalies, estimate their geographic "
-    "locations, assess image quality, and generate structured "
+    "locations, assess sonar image quality, and generate structured "
     "anomaly reports."
 )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # MODEL LOADING
-# ------------------------------------------------------------
+# ============================================================
 
 @st.cache_resource
 def load_model():
@@ -146,9 +146,9 @@ except Exception as e:
     st.stop()
 
 
-# ------------------------------------------------------------
+# ============================================================
 # SIDEBAR
-# ------------------------------------------------------------
+# ============================================================
 
 st.sidebar.title("⚙️ Analysis Settings")
 
@@ -201,19 +201,19 @@ st.sidebar.markdown(
 )
 
 st.sidebar.caption(
-    "Image-based quality, dropout and anomaly-evidence "
-    "analysis is enabled."
+    "Image-quality, dropout, texture, edge and "
+    "shadow-like analysis is enabled."
 )
 
 st.sidebar.caption(
-    "True heave/pitch/roll correction requires original "
-    "sonar navigation metadata."
+    "True heave/pitch/roll correction requires "
+    "original sonar navigation metadata."
 )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # GEOGRAPHIC FOOTPRINT
-# ------------------------------------------------------------
+# ============================================================
 
 st.header("🗺️ Survey Geographic Footprint")
 
@@ -264,7 +264,6 @@ coordinates_valid = all(
             latitude_min,
             longitude_min
         ),
-
         valid_coordinate(
             latitude_max,
             longitude_max
@@ -316,9 +315,9 @@ st.warning(
 )
 
 
-# ------------------------------------------------------------
+# ============================================================
 # IMAGE UPLOAD
-# ------------------------------------------------------------
+# ============================================================
 
 st.header("📡 Sonar Image Analysis")
 
@@ -368,7 +367,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------------
-    # IMAGE INFORMATION
+    # INPUT INFORMATION
     # --------------------------------------------------------
 
     st.subheader("📷 Input Information")
@@ -418,7 +417,7 @@ if uploaded_file is not None:
 
 
     # ========================================================
-    # SONAR PREPROCESSING
+    # PREPROCESSING
     # ========================================================
 
     progress = st.progress(
@@ -446,8 +445,6 @@ if uploaded_file is not None:
             text="Enhancing and filtering sonar imagery..."
         )
 
-        time.sleep(0.1)
-
     except Exception as e:
 
         progress.empty()
@@ -462,7 +459,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------------
-    # IMAGE QUALITY RESULTS
+    # QUALITY INFORMATION
     # --------------------------------------------------------
 
     quality = preprocessing_analysis[
@@ -485,7 +482,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------------
-    # PREPROCESSING INFORMATION
+    # SONAR QUALITY DISPLAY
     # --------------------------------------------------------
 
     st.subheader(
@@ -551,7 +548,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------------
-    # PROCESSED IMAGE
+    # PREPROCESSED IMAGE
     # --------------------------------------------------------
 
     with st.expander(
@@ -618,22 +615,8 @@ if uploaded_file is not None:
 
 
     # ========================================================
-    # DETECTION EXTRACTION
+    # COORDINATE TRANSFORMATION
     # ========================================================
-
-    detections = []
-
-
-    # --------------------------------------------------------
-    # Preprocessing transformation values
-    #
-    # Original image was resized to fit inside 1024x1024
-    # while preserving aspect ratio.
-    #
-    # YOLO works on the processed 1024x1024 image.
-    # We therefore convert detection pixels back to the
-    # ORIGINAL image coordinate system before geotagging.
-    # --------------------------------------------------------
 
     scale = min(
         TARGET_WIDTH / original_width,
@@ -659,6 +642,13 @@ if uploaded_file is not None:
     ) // 2
 
 
+    # ========================================================
+    # DETECTION EXTRACTION
+    # ========================================================
+
+    detections = []
+
+
     if result.boxes is not None:
 
         for i in range(
@@ -666,7 +656,7 @@ if uploaded_file is not None:
         ):
 
             # ------------------------------------------------
-            # MODEL CLASS
+            # CLASS
             # ------------------------------------------------
 
             class_id = int(
@@ -679,7 +669,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # MODEL CONFIDENCE
+            # CONFIDENCE
             # ------------------------------------------------
 
             confidence = float(
@@ -688,7 +678,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # PROCESSED-IMAGE BOUNDING BOX
+            # PROCESSED IMAGE BOX
             # ------------------------------------------------
 
             px1, py1, px2, py2 = (
@@ -697,7 +687,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # CENTER IN PROCESSED IMAGE
+            # PROCESSED CENTER
             # ------------------------------------------------
 
             processed_center_x = (
@@ -710,7 +700,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # CONVERT PROCESSED PIXELS BACK TO ORIGINAL IMAGE
+            # ORIGINAL IMAGE COORDINATES
             # ------------------------------------------------
 
             original_x1 = (
@@ -729,7 +719,6 @@ if uploaded_file is not None:
                 py2 - pad_y
             ) / scale
 
-
             original_center_x = (
                 processed_center_x - pad_x
             ) / scale
@@ -740,7 +729,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # CLAMP TO ORIGINAL IMAGE
+            # CLAMP BOX
             # ------------------------------------------------
 
             original_x1 = max(
@@ -793,7 +782,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # WIDTH / HEIGHT
+            # DIMENSIONS
             # ------------------------------------------------
 
             width_pixels = (
@@ -805,12 +794,9 @@ if uploaded_file is not None:
             )
 
 
-            # ------------------------------------------------
-            # SONAR EVIDENCE / VALIDATION
-            #
-            # Analysis is performed around the detected
-            # bounding box in the processed sonar image.
-            # ------------------------------------------------
+            # =================================================
+            # SONAR EVIDENCE ANALYSIS
+            # =================================================
 
             validation = validate_detection(
                 np.asarray(
@@ -844,26 +830,7 @@ if uploaded_file is not None:
 
 
             # ------------------------------------------------
-            # ANOMALY ASSESSMENT
-            # ------------------------------------------------
-
-            anomaly_score = validation[
-                "anomaly_score"
-            ]
-
-            anomaly_assessment = validation[
-                "assessment"
-            ]
-
-
-            # ------------------------------------------------
             # GEOTAG
-            #
-            # IMPORTANT:
-            # We use ORIGINAL image coordinates here because
-            # the geographic footprint corresponds to the
-            # uploaded image rather than the 1024x1024
-            # padded processing canvas.
             # ------------------------------------------------
 
             latitude, longitude = (
@@ -885,7 +852,6 @@ if uploaded_file is not None:
             # ------------------------------------------------
 
             detections.append(
-
                 {
                     "image":
                         uploaded_file.name,
@@ -903,16 +869,54 @@ if uploaded_file is not None:
                         confidence_level,
 
                     "anomaly_score":
-                        round(
-                            anomaly_score,
-                            2
-                        ),
+                        validation[
+                            "anomaly_score"
+                        ],
 
                     "anomaly_assessment":
-                        anomaly_assessment,
+                        validation[
+                            "assessment"
+                        ],
 
                     "validation":
+                        validation,
+
+                    "bounding_box":
                         {
-                            "shadow_score":
-                                validation[
-             
+                            "x1":
+                                round(
+                                    original_x1,
+                                    2
+                                ),
+
+                            "y1":
+                                round(
+                                    original_y1,
+                                    2
+                                ),
+
+                            "x2":
+                                round(
+                                    original_x2,
+                                    2
+                                ),
+
+                            "y2":
+                                round(
+                                    original_y2,
+                                    2
+                                )
+                        },
+
+                    "center_pixel":
+                        {
+                            "x":
+                                round(
+                                    original_center_x,
+                                    2
+                                ),
+
+                            "y":
+                                round(
+                                    original_center_y,
+        
