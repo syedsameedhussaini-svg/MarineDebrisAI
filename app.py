@@ -850,73 +850,54 @@ if uploaded_file is not None:
             # ------------------------------------------------
             # DETECTION OBJECT
             # ------------------------------------------------
-
             detections.append(
                 {
-                    "image":
-                        uploaded_file.name,
+                    "image": uploaded_file.name,
+                    "classification": class_name,
 
-                    "classification":
-                        class_name,
+                    "confidence": round(
+                        confidence * 100,
+                        2
+                    ),
 
-                    "confidence":
-                        round(
-                            confidence * 100,
-                            2
-                        ),
+                    "confidence_level": confidence_level,
 
-                    "confidence_level":
-                        confidence_level,
+                    "anomaly_score": validation[
+                        "anomaly_score"
+                    ],
 
-                    "anomaly_score":
-                        validation[
-                            "anomaly_score"
-                        ],
+                    "anomaly_assessment": validation[
+                        "assessment"
+                    ],
 
-                    "anomaly_assessment":
-                        validation[
-                            "assessment"
-                        ],
+                    "validation": validation,
 
-                    "validation":
-                        validation,
+                    "bounding_box": {
+                        "x1": round(original_x1, 2),
+                        "y1": round(original_y1, 2),
+                        "x2": round(original_x2, 2),
+                        "y2": round(original_y2, 2)
+                    },
 
-                    "bounding_box":
-                        {
-                            "x1":
-                                round(
-                                    original_x1,
-                                    2
-                                ),
+                    "center_pixel": {
+                        "x": round(original_center_x, 2),
+                        "y": round(original_center_y, 2)
+                    },
 
-                            "y1":
-                                round(
-                                    original_y1,
-                                    2
-                                ),
+                    "width_pixels": round(
+                        width_pixels,
+                        2
+                    ),
 
-                            "x2":
-                                round(
-                                    original_x2,
-                                    2
-                                ),
+                    "height_pixels": round(
+                        height_pixels,
+                        2
+                    ),
 
-                            "y2":
-                                round(
-                                    original_y2,
-                                    2
-                                )
-                        },
-
-                    "center_pixel":
-                        {
-                            "x":
-                                round(
-                                    original_center_x,
-                                    2
-                                ),
-
-                            "y":
-                                round(
-                                    original_center_y,
+                    "latitude": latitude,
+                    "longitude": longitude
+                }
+    )
+            
+                                    
         
