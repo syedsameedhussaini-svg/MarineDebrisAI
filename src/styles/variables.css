@@ -1,96 +1,96 @@
 /* ============================================================
-   MarineDebrisAI - Professional Scientific Design System
-   Clean, practical, trustworthy scientific software palette
+   MarineDebrisAI - Sonar Dark Mode Theme
+   Sleek, hackathon-winning dark mode palette with glowing accents
    ============================================================ */
 
 :root {
-  /* Neutral Scientific Color Palette */
-  --color-bg-app: #f8fafc;
-  --color-bg-card: #ffffff;
-  --color-bg-subtle: #f1f5f9;
-  --color-bg-hover: #e2e8f0;
-  --color-bg-dark: #0f172a;
+  /* Dark Mode Base & Backgrounds */
+  --color-bg-app: #09090b; /* zinc-950 */
+  --color-bg-card: #18181b; /* zinc-900 */
+  --color-bg-subtle: #27272a; /* zinc-800 */
+  --color-bg-hover: #3f3f46; /* zinc-700 */
+  --color-bg-dark: #000000;
 
   /* Aliases for compatibility */
   --color-bg-abyss: var(--color-bg-app);
   --color-bg-ocean: var(--color-bg-subtle);
   --color-bg-surface: var(--color-bg-card);
-  --color-bg-surface-elevated: var(--color-bg-card);
+  --color-bg-surface-elevated: #27272a;
   --color-bg-surface-hover: var(--color-bg-hover);
 
-  /* Soft Gray Borders */
-  --border-subtle: #e2e8f0;
-  --border-medium: #cbd5e1;
-  --border-strong: #94a3b8;
-  --grid-line: transparent;
+  /* Borders */
+  --border-subtle: #27272a;
+  --border-medium: #3f3f46;
+  --border-strong: #52525b;
+  --grid-line: rgba(255, 255, 255, 0.05);
 
-  /* Primary Brand: Subtle Scientific Marine Teal */
-  --color-primary: #0f766e;
-  --color-primary-hover: #115e59;
-  --color-primary-dim: #134e4a;
-  --color-primary-light: #f0fdfa;
-  --color-primary-border: #ccfbf1;
-  --color-primary-bg: #f0fdfa;
-  --color-primary-glow: transparent;
+  /* Primary Brand: Sonar Cyan */
+  --color-primary: #06b6d4; /* cyan-500 */
+  --color-primary-hover: #22d3ee; /* cyan-400 */
+  --color-primary-dim: #0891b2; /* cyan-600 */
+  --color-primary-light: rgba(6, 182, 212, 0.15);
+  --color-primary-border: rgba(6, 182, 212, 0.3);
+  --color-primary-bg: rgba(6, 182, 212, 0.05);
+  --color-primary-glow: 0 0 12px rgba(6, 182, 212, 0.4);
 
   /* Status Colors */
-  --color-success: #16a34a;
-  --color-success-bg: #f0fdf4;
-  --color-success-border: #bbf7d0;
-  --color-success-dim: #15803d;
-  --color-success-glow: transparent;
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-success-border: rgba(16, 185, 129, 0.25);
+  --color-success-dim: #059669;
+  --color-success-glow: 0 0 10px rgba(16, 185, 129, 0.3);
 
-  --color-warning: #d97706;
-  --color-warning-bg: #fffbeb;
-  --color-warning-border: #fde68a;
-  --color-warning-dim: #b45309;
-  --color-warning-glow: transparent;
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(245, 158, 11, 0.25);
+  --color-warning-dim: #d97706;
+  --color-warning-glow: 0 0 10px rgba(245, 158, 11, 0.3);
 
-  --color-danger: #dc2626;
-  --color-danger-bg: #fef2f2;
-  --color-danger-border: #fecaca;
-  --color-danger-dim: #b91c1c;
-  --color-danger-glow: transparent;
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-danger-border: rgba(239, 68, 68, 0.25);
+  --color-danger-dim: #dc2626;
+  --color-danger-glow: 0 0 10px rgba(239, 68, 68, 0.3);
 
-  --color-info: #0284c7;
-  --color-info-bg: #f0f9ff;
-  --color-info-border: #bae6fd;
+  --color-info: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-info-border: rgba(59, 130, 246, 0.25);
 
   /* Classification Tag Colors */
-  --color-class-shipwreck: #b91c1c;
-  --color-class-shipwreck-bg: #fef2f2;
-  --color-class-aircraft: #c2410c;
-  --color-class-aircraft-bg: #fff7ed;
-  --color-class-other: #0f766e;
-  --color-class-other-bg: #f0fdfa;
-  --color-class-fish: #15803d;
-  --color-class-fish-bg: #f0fdf4;
+  --color-class-shipwreck: #ef4444;
+  --color-class-shipwreck-bg: rgba(239, 68, 68, 0.15);
+  --color-class-aircraft: #f97316;
+  --color-class-aircraft-bg: rgba(249, 115, 22, 0.15);
+  --color-class-other: #06b6d4;
+  --color-class-other-bg: rgba(6, 182, 212, 0.15);
+  --color-class-fish: #10b981;
+  --color-class-fish-bg: rgba(16, 185, 129, 0.15);
 
-  /* Dark Charcoal Typography */
-  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  /* Typography */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-accent: #0f766e;
+  --text-primary: #f8fafc; /* slate-50 */
+  --text-secondary: #cbd5e1; /* slate-300 */
+  --text-muted: #94a3b8; /* slate-400 */
+  --text-accent: #22d3ee; /* cyan-400 */
 
-  /* Clean Elevation Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --shadow-glow-cyan: none;
-  --shadow-glow-green: none;
+  /* Dark Elevations & Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-glow-cyan: var(--color-primary-glow);
+  --shadow-glow-green: var(--color-success-glow);
 
   /* Dimensions & Spacing */
-  --sidebar-width: 230px;
-  --header-height: 58px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --sidebar-width: 240px;
+  --header-height: 64px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
 
   /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.2s ease;
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.25s ease-in-out;
 }

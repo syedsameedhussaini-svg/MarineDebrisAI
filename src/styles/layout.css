@@ -1,5 +1,5 @@
 /* ============================================================
-   MarineDebrisAI - Layout & Shell
+   MarineDebrisAI - Layout & Shell (Dark Mode)
    Clean, Conventional Scientific Software Layout
    ============================================================ */
 
@@ -17,7 +17,7 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-display);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -31,13 +31,13 @@ html, body {
 }
 
 /* ============================================================
-   Sidebar Styling (Clean Professional Software Sidebar)
+   Sidebar Styling
    ============================================================ */
 .app-sidebar {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
   height: 100%;
-  background: #ffffff;
+  background: var(--color-bg-card);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -47,28 +47,30 @@ html, body {
 }
 
 .sidebar-header {
-  padding: 16px 18px;
+  padding: 20px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .brand-badge {
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary-light);
-  border: 1px solid var(--color-primary-border);
+  width: 36px;
+  height: 36px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-primary);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
 }
 
 .brand-badge svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 0 4px rgba(6,182,212,0.5));
 }
 
 .brand-text {
@@ -77,63 +79,70 @@ html, body {
 }
 
 .brand-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 
 .brand-title span {
   color: var(--color-primary);
+  text-shadow: 0 0 8px rgba(6,182,212,0.3);
 }
 
 .brand-tagline {
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .sidebar-nav {
-  padding: 12px 10px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .nav-section-title {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 8px 10px 4px;
+  letter-spacing: 1px;
+  padding: 12px 12px 4px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
+  border: 1px solid transparent;
 }
 
 .nav-item svg {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   stroke: var(--text-muted);
   flex-shrink: 0;
   transition: stroke var(--transition-fast);
 }
 
 .nav-item:hover {
-  background: var(--color-bg-subtle);
+  background: var(--color-bg-hover);
   color: var(--text-primary);
+  border-color: var(--border-medium);
 }
 
 .nav-item:hover svg {
@@ -141,36 +150,40 @@ html, body {
 }
 
 .nav-item.active {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  color: var(--color-primary-hover);
   font-weight: 600;
+  border-color: var(--color-primary-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .nav-item.active svg {
-  stroke: var(--color-primary);
+  stroke: var(--color-primary-hover);
+  filter: drop-shadow(0 0 4px rgba(6,182,212,0.4));
 }
 
 .nav-badge {
   margin-left: auto;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--color-primary);
-  color: #ffffff;
-  padding: 1px 7px;
+  color: var(--color-bg-app);
+  padding: 2px 8px;
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-glow-cyan);
 }
 
 .sidebar-footer {
-  padding: 14px 16px;
+  padding: 16px 20px;
   border-top: 1px solid var(--border-subtle);
-  background: #fafafa;
+  background: var(--color-bg-app);
 }
 
 .sidebar-telemetry-box {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
+  gap: 8px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -183,7 +196,8 @@ html, body {
 .telemetry-val {
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--color-primary);
+  text-shadow: 0 0 8px rgba(6,182,212,0.2);
 }
 
 /* ============================================================
@@ -196,14 +210,29 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: var(--color-bg-app);
+  position: relative;
+}
+
+.app-main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  background: linear-gradient(180deg, rgba(6,182,212,0.03) 0%, rgba(9,9,11,0) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .app-header {
   height: var(--header-height);
   min-height: var(--header-height);
-  background: #ffffff;
+  background: rgba(24, 24, 27, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 0 24px;
+  padding: 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -222,52 +251,59 @@ html, body {
 }
 
 .view-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
 }
 
 .view-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .header-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
   background: var(--color-bg-subtle);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   font-size: 12px;
   color: var(--text-secondary);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.02);
 }
 
 .header-pill-highlight {
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
 }
 
 .status-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--color-success);
+  box-shadow: var(--shadow-glow-green);
 }
 
 .header-clock {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
+  background: var(--color-bg-subtle);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-medium);
 }
 
 /* ============================================================
@@ -275,40 +311,54 @@ html, body {
    ============================================================ */
 .content-viewport {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
-  background: var(--color-bg-app);
+  z-index: 1;
 }
 
 .panel {
-  background: #ffffff;
+  background: var(--color-bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 20px;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a subtle highlight line to the top of panels */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .panel-title {
-  font-size: 14.5px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .panel-title svg {
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
   stroke: var(--color-primary);
+  filter: drop-shadow(0 0 2px rgba(6,182,212,0.3));
 }
