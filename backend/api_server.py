@@ -17,6 +17,10 @@ import uvicorn
 from PIL import Image
 import numpy as np
 import cv2
+import torch
+import gc
+
+torch.set_num_threads(2)
 
 # Project root
 BASE_DIR = Path(__file__).resolve().parent
@@ -104,13 +108,15 @@ async def analyze_sonar_image(
 
         # 2. YOLO inference
         infer_start = time.perf_counter()
-        results = model.predict(
-            source=processed_image,
-            conf=float(conf),
-            iou=float(iou),
-            save=False,
-            verbose=False
-        )
+        with torch.inference_mode():
+            results = model.predict(
+                source=processed_image,
+                conf=float(conf),
+                iou=float(iou),
+                imgsz=640,
+                save=False,
+                verbose=False
+            )
         inference_time = time.perf_counter() - infer_start
 
         result = results[0]
@@ -197,6 +203,8 @@ async def analyze_sonar_image(
 
         total_time = time.perf_counter() - start_time
         quality = preprocessing_analysis.get("original_quality", {})
+
+        gc.collect()
 
         return {
             "success": True,
