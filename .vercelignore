@@ -1,3 +1,5 @@
 backend
 Procfile
 *.pt
+*.py
+requirements.txt
