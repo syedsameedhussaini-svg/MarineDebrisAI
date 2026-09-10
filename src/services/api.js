@@ -20,10 +20,10 @@ let isBackendAvailable = false;
 /**
  * Check backend connection status
  */
-export async function checkBackendHealth() {
+export async function checkBackendHealth(timeoutMs = 15000) {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     const url = getApiUrl('/api/health');
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
@@ -39,7 +39,7 @@ export async function checkBackendHealth() {
   const targetDesc = API_BASE_URL ? API_BASE_URL : 'local port 8000';
   return {
     connected: false,
-    message: `AI OFFLINE: Python backend is not responding at ${targetDesc}.`
+    message: `AI OFFLINE: Python backend is not responding at ${targetDesc}. (If using Render free tier, it may take 30-45s to spin up from sleep).`
   };
 }
 
