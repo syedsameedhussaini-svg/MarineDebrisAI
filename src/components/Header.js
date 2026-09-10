@@ -46,31 +46,50 @@ export function renderHeader(viewTitle, viewSubtitle, currentAnalysis = null) {
   if (clockIntervalId) clearInterval(clockIntervalId);
   clockIntervalId = setInterval(updateClock, 1000);
 
-  // Check health once on render
-  checkBackendHealth().then(res => {
+  const updateAiStatus = async () => {
     const textEl = container.querySelector('#aiStatusText');
     const dotEl = container.querySelector('#aiStatusDot');
     const pillEl = container.querySelector('#aiStatusPill');
+    if (!pillEl) return;
 
+    const res = await checkBackendHealth(10000);
     if (res.connected) {
       if (textEl) textEl.textContent = 'AI Connected (best.pt)';
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--color-success)';
-      }
+      if (dotEl) dotEl.style.backgroundColor = 'var(--color-success)';
       if (pillEl) {
         pillEl.style.borderColor = 'var(--border-subtle)';
+        pillEl.title = 'Python backend is connected and ready';
       }
     } else {
-      if (textEl) textEl.textContent = 'AI Offline';
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--color-danger)';
-      }
+      if (textEl) textEl.textContent = 'AI Offline (Tap to retry)';
+      if (dotEl) dotEl.style.backgroundColor = 'var(--color-danger)';
       if (pillEl) {
         pillEl.style.borderColor = 'var(--color-danger-border)';
-        pillEl.title = 'Python backend (api_server.py) is not running on http://127.0.0.1:8000';
+        pillEl.title = 'Tap to test connection to backend';
       }
     }
-  });
+  };
+
+  updateAiStatus();
+
+  // Auto-retry polling if offline every 10s
+  const pollInterval = setInterval(() => {
+    const textEl = container.querySelector('#aiStatusText');
+    if (textEl && textEl.textContent.includes('Offline')) {
+      updateAiStatus();
+    }
+  }, 10000);
+
+  // Click pill to manually retry
+  const pillEl = container.querySelector('#aiStatusPill');
+  if (pillEl) {
+    pillEl.style.cursor = 'pointer';
+    pillEl.addEventListener('click', () => {
+      const textEl = container.querySelector('#aiStatusText');
+      if (textEl) textEl.textContent = 'Checking...';
+      updateAiStatus();
+    });
+  }
 
   return container;
 }

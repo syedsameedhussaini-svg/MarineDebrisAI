@@ -60,10 +60,15 @@ export async function runRealSonarAnalysis({
   onProgress = () => {}
 }) {
   onProgress(10, 'Connecting to FastAPI backend...');
-  const health = await checkBackendHealth();
+  let health = await checkBackendHealth(12000);
+  if (!health.connected) {
+    onProgress(15, 'Backend waking up from sleep, retrying in 3s...');
+    await new Promise(r => setTimeout(r, 3000));
+    health = await checkBackendHealth(12000);
+  }
   if (!health.connected) {
     const targetDesc = API_BASE_URL ? API_BASE_URL : 'http://127.0.0.1:8000';
-    throw new Error(`AI OFFLINE: The Python backend service is not responding at ${targetDesc}. Ensure the server is running or verify your VITE_API_BASE_URL configuration.`);
+    throw new Error(`AI OFFLINE: The Python backend service is not responding at ${targetDesc}. Render free tier takes ~30-45s to wake up if inactive. Tap the status pill to reconnect once awake.`);
   }
 
   onProgress(25, 'Uploading sonar image...');
