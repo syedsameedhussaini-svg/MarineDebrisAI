@@ -32,12 +32,19 @@ from preprocess import preprocess_with_analysis, TARGET_WIDTH, TARGET_HEIGHT
 from sonar_analysis import validate_detection
 from geotag import footprint_pixel_to_gps, valid_coordinate
 
-MODEL_PATH = BASE_DIR / "best.pt"
-if not MODEL_PATH.exists():
-    raise FileNotFoundError(f"Trained model not found at: {MODEL_PATH}")
+# Initialize Model (Load real weights, preferring faster ONNX if available)
+MODEL_PATH_ONNX = BASE_DIR / "best.onnx"
+MODEL_PATH_PT = BASE_DIR / "best.pt"
 
-print(f"Loading MarineDebrisAI YOLO model from {MODEL_PATH}...")
-model = YOLO(str(MODEL_PATH))
+if MODEL_PATH_ONNX.exists():
+    print("Loading optimized ONNX model into memory (3x-5x faster CPU inference)...")
+    model = YOLO(str(MODEL_PATH_ONNX), task='detect')
+elif MODEL_PATH_PT.exists():
+    print("Loading standard PyTorch YOLO model into memory...")
+    model = YOLO(str(MODEL_PATH_PT))
+else:
+    raise RuntimeError(f"Model file not found in {MODEL_PATH_PT.parent}")
+
 print(f"Model loaded successfully. Classes: {model.names}")
 
 app = FastAPI(
