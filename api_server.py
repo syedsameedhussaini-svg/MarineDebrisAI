@@ -30,7 +30,7 @@ sys.path.insert(0, str(BASE_DIR))
 from ultralytics import YOLO
 from preprocess import preprocess_with_analysis, TARGET_WIDTH, TARGET_HEIGHT
 from sonar_analysis import validate_detection
-from geotag import footprint_pixel_to_gps, valid_coordinate
+from geotag import footprint_pixel_to_gps, valid_coordinate, pixel_to_meters
 
 # Initialize Model (Load real weights, preferring faster ONNX if available)
 MODEL_PATH_ONNX = BASE_DIR / "best.onnx"
@@ -184,13 +184,29 @@ async def analyze_sonar_image(
                 else:
                     lat, lon = None, None
 
+                # Calculate Physical Dimensions (Assuming 100m swath)
+                width_m, height_m = pixel_to_meters(w_px, h_px, original_width, original_height)
+
+                # Honest Taxonomy Mapping
+                raw_class = model.names[cls_id].lower()
+                if 'shipwreck' in raw_class:
+                    mapped_class = 'Artificial Anomaly (Shipwreck)'
+                elif 'pipe' in raw_class or 'cable' in raw_class:
+                    mapped_class = 'Artificial Anomaly (Linear Structure)'
+                elif 'net' in raw_class or 'ghost' in raw_class:
+                    mapped_class = 'Artificial Anomaly (Net-like)'
+                else:
+                    mapped_class = 'Unknown Artificial Anomaly'
+
                 detections.append({
                     "id": f"DET-{i+1:02d}",
-                    "classification": model.names[cls_id],
+                    "classification": mapped_class,
+                    "raw_classification": model.names[cls_id],
                     "confidence": round(confidence * 100.0, 1),
                     "confidence_level": "High" if confidence >= 0.8 else ("Moderate" if confidence >= 0.6 else "Low"),
                     "anomaly_score": validation.get("anomaly_score"),
                     "anomaly_assessment": validation.get("assessment"),
+                    "review_status": "Unverified",
                     "bounding_box": {
                         "x1": round(ox1, 1),
                         "y1": round(oy1, 1),
@@ -200,6 +216,8 @@ async def analyze_sonar_image(
                     "center_pixel": {"x": round(cx, 1), "y": round(cy, 1)},
                     "width_pixels": w_px,
                     "height_pixels": h_px,
+                    "width_m": width_m,
+                    "length_m": height_m,
                     "latitude": lat,
                     "longitude": lon,
                     "shadow_score": validation.get("shadow_score"),

@@ -47,11 +47,15 @@ export function downloadCsvReport(scanData, filename = 'anomaly_report.csv') {
   
   const headers = [
     'image',
+    'id',
     'classification',
+    'review_status',
     'confidence_percent',
     'confidence_level',
     'anomaly_score_percent',
     'anomaly_assessment',
+    'shadow_score',
+    'texture_score',
     'center_x',
     'center_y',
     'x1',
@@ -60,6 +64,8 @@ export function downloadCsvReport(scanData, filename = 'anomaly_report.csv') {
     'y2',
     'width_pixels',
     'height_pixels',
+    'width_meters',
+    'length_meters',
     'latitude',
     'longitude'
   ];
@@ -67,13 +73,18 @@ export function downloadCsvReport(scanData, filename = 'anomaly_report.csv') {
   const rows = detections.map(d => {
     const box = d.bounding_box || { x1: 0, y1: 0, x2: 0, y2: 0 };
     const center = d.center_pixel || { x: 0, y: 0 };
+    const revStatus = window.reviewStatusMap ? (window.reviewStatusMap[d.id] || d.review_status || 'Unverified') : (d.review_status || 'Unverified');
     return [
       escapeCsv(d.image || scanData.image || 'sonar_scan.jpg'),
+      escapeCsv(d.id || ''),
       escapeCsv(d.classification || 'unknown'),
+      escapeCsv(revStatus),
       d.confidence !== undefined ? Number(d.confidence).toFixed(2) : '0.00',
       escapeCsv(d.confidence_level || 'Moderate'),
       d.anomaly_score !== undefined ? Number(d.anomaly_score).toFixed(2) : '0.00',
       escapeCsv(d.anomaly_assessment || 'Moderate'),
+      d.shadow_score !== undefined ? Number(d.shadow_score).toFixed(2) : '0.00',
+      d.texture_score !== undefined ? Number(d.texture_score).toFixed(2) : '0.00',
       Number(center.x).toFixed(2),
       Number(center.y).toFixed(2),
       Number(box.x1).toFixed(2),
@@ -82,6 +93,8 @@ export function downloadCsvReport(scanData, filename = 'anomaly_report.csv') {
       Number(box.y2).toFixed(2),
       Number(d.width_pixels || (box.x2 - box.x1)).toFixed(2),
       Number(d.height_pixels || (box.y2 - box.y1)).toFixed(2),
+      d.width_m !== undefined ? Number(d.width_m).toFixed(2) : '',
+      d.length_m !== undefined ? Number(d.length_m).toFixed(2) : '',
       d.latitude !== null && d.latitude !== undefined ? Number(d.latitude).toFixed(7) : '',
       d.longitude !== null && d.longitude !== undefined ? Number(d.longitude).toFixed(7) : ''
     ].join(',');

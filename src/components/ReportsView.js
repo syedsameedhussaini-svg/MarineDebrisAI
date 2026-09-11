@@ -44,35 +44,36 @@ export function renderReportsView({ scanData }) {
         <table class="data-table">
           <thead>
             <tr>
-              <th>#</th>
               <th>ID</th>
               <th>Classification</th>
+              <th>Review Status</th>
               <th>Confidence</th>
-              <th>Bounding Box [x1, y1, x2, y2]</th>
               <th>Dimensions</th>
               <th>Anomaly Score</th>
               <th>Coordinates</th>
             </tr>
           </thead>
           <tbody>
-            ${detections.map((d, index) => {
+            \${detections.map((d, index) => {
               const classType = (d.classification || 'other').toLowerCase();
-              return `
+              const revStatus = window.reviewStatusMap ? (window.reviewStatusMap[d.id] || d.review_status || 'Unverified') : (d.review_status || 'Unverified');
+              const revBadgeClass = revStatus === 'Confirmed' ? 'badge-green' : (revStatus === 'Rejected' ? 'badge-red' : 'badge-amber');
+              
+              return \`
                 <tr>
-                  <td class="mono" style="color: var(--text-muted);">${index + 1}</td>
-                  <td class="mono" style="color: var(--color-primary); font-weight: 700;">${d.id}</td>
-                  <td><span class="detection-class-badge class-${classType}">${d.classification.toUpperCase()}</span></td>
-                  <td class="mono" style="color: ${d.confidence >= 80 ? 'var(--color-success)' : 'var(--color-warning)'}; font-weight: 700;">
-                    ${d.confidence.toFixed(1)}%
+                  <td class="mono" style="color: var(--color-primary); font-weight: 700;">\${d.id}</td>
+                  <td><span class="detection-class-badge class-\${classType.includes('shipwreck') ? 'shipwreck' : 'other'}">\${d.classification.toUpperCase()}</span></td>
+                  <td><span class="badge \${revBadgeClass}">\${revStatus}</span></td>
+                  <td class="mono" style="color: \${d.confidence >= 80 ? 'var(--color-success)' : 'var(--color-warning)'}; font-weight: 700;">
+                    \${d.confidence.toFixed(1)}%
                   </td>
-                  <td class="mono" style="font-size: 11.5px;">[${d.bounding_box?.x1}, ${d.bounding_box?.y1}, ${d.bounding_box?.x2}, ${d.bounding_box?.y2}]</td>
-                  <td class="mono" style="font-size: 12px;">${d.width_pixels} × ${d.height_pixels} px</td>
-                  <td style="font-size: 12px;">${d.anomaly_score !== null && d.anomaly_score !== undefined ? `${d.anomaly_score.toFixed(1)}% (${d.anomaly_assessment || 'Moderate'})` : 'N/A'}</td>
+                  <td class="mono" style="font-size: 12px;">\${d.width_m ? \`\${d.width_m}m x \${d.length_m}m\` : \`\${d.width_pixels}x\${d.height_pixels} px\`}</td>
+                  <td style="font-size: 12px;">\${d.anomaly_score !== null && d.anomaly_score !== undefined ? \`\${d.anomaly_score.toFixed(1)}% (\${d.anomaly_assessment || 'Moderate'})\` : 'N/A'}</td>
                   <td class="mono" style="font-size: 12px;">
-                    ${d.latitude !== null && d.latitude !== undefined ? formatCoordinates(d.latitude, d.longitude) : '<span style="color: var(--text-muted);">N/A (No footprint)</span>'}
+                    \${d.latitude !== null && d.latitude !== undefined ? formatCoordinates(d.latitude, d.longitude) : '<span style="color: var(--text-muted);">N/A (No footprint)</span>'}
                   </td>
                 </tr>
-              `;
+              \`;
             }).join('')}
 
             ${detections.length === 0 ? `

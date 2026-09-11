@@ -313,3 +313,18 @@ def normalize_number(value):
     ):
 
         return None
+def pixel_to_meters(w_px, h_px, image_width, image_height, swath_width_m=100.0, along_track_m=150.0):
+    """
+    Convert bounding box pixel dimensions to physical meters.
+    Assumes a default Side-Scan Sonar geometry (e.g., 50m port, 50m starboard).
+    """
+    try:
+        w_ratio = float(w_px) / float(image_width)
+        h_ratio = float(h_px) / float(image_height)
+        
+        width_m = w_ratio * float(swath_width_m)
+        height_m = h_ratio * float(along_track_m)
+        
+        return round(width_m, 2), round(height_m, 2)
+    except Exception:
+        return None, None
